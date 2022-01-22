@@ -6,9 +6,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 
 @Injectable()
-export class SyncDataService {
-    private isConfCreateEnd: boolean = true;
-    
+export class SyncDataService {    
     constructor(
         private readonly configService: ConfigService,
         private readonly log: LoggerService,
@@ -18,10 +16,10 @@ export class SyncDataService {
     onApplicationBootstrap() {}
 
 
-    @Cron(CronExpression.EVERY_WEEK)
+    @Cron(CronExpression.EVERY_MINUTE)
     async updatePhonebook(){
         try {
-
+            await this.selenium.updatePhonebook();
         }catch(e){
             this.log.error(JSON.stringify(e));
         }

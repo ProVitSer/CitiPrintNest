@@ -2,7 +2,7 @@ import { Document, Schema } from 'mongoose';
 import { Phonebook } from '../schemas';
 
 export enum CollectionType {
-  Phonebook = 'smart_routing',
+  phonebook = 'phonebook',
 }
 
 export enum DbRequestType {

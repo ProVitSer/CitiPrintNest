@@ -7,6 +7,7 @@ import { Builder, By, until } from 'selenium-webdriver';
 import { MongoService } from '@app/mongo/mongo.service';
 import { PhonebookStruct } from '@app/mongo/types/interfaces';
 import { CollectionType, DbRequestType } from '@app/mongo/types/types';
+import { MailService } from '@app/mail/mail.service';
 
 @Injectable()
 export class SeleniumService {
@@ -15,7 +16,8 @@ export class SeleniumService {
     constructor(
         private readonly configService: ConfigService,
         private readonly log: LoggerService,
-        private readonly mongo: MongoService
+        private readonly mongo: MongoService,
+        private readonly mail: MailService
       ) {}
 
     public async updatePhonebook(){
@@ -29,8 +31,16 @@ export class SeleniumService {
           await this.deletePhonebook();
           await this.addNewPhonebook(phonebook);
           await this.logout();
+          await this.driver.quit();
+          await this.mail.send('Успешная синхронизация телефонной книги')
         } catch(e){
           this.log.error(`Ошибка обновление контактной книги 3сх ${JSON.stringify(e)}`);
+          await this.mail.send('Проблемы синхронизации контактной книги')
+          try{
+            await this.driver.quit();
+          }catch(e){
+            this.log.error(`Ошибка выхода ${JSON.stringify(e)}`);
+          }
         }
     }
 
@@ -50,9 +60,10 @@ export class SeleniumService {
       try {
           await this.driver.get(`https://${this.configService.get('Pbx3CX.url')}/#/login`);
           await this.driver.wait(until.elementLocated(By.className('btn btn-lg btn-primary btn-block ng-scope')), 10 * 10000);
-          await this.driver.findElement(By.xpath("//input[@placeholder='Имя пользователя или доб. номер']")).sendKeys(this.configService.get('Pbx3CX.username'));
-          await this.driver.findElement(By.xpath("//input[@placeholder='Пароль']")).sendKeys(this.configService.get('Pbx3CX.password'));
-          await this.driver.findElement(By.className("//button[@translate='LOGIN_SCREEN.LOGIN_BTN']")).click();
+          await this.driver.findElement(By.xpath("//input[@placeholder='User name or extension number]")).sendKeys(this.configService.get('Pbx3CX.username'));
+          await this.driver.findElement(By.xpath("//input[@placeholder='Password']")).sendKeys(this.configService.get('Pbx3CX.password'));
+          await this.driver.sleep(1000);
+          await this.driver.findElement(By.xpath("//button[@translate='LOGIN_SCREEN.LOGIN_BTN']")).click();
           await this.driver.sleep(5000);
           return '';
       } catch (e) {
@@ -93,10 +104,10 @@ export class SeleniumService {
         await Promise.all(phonebook.map(async (contact: PhonebookStruct) => {
         await this.driver.wait(until.elementLocated(By.id('btnImport')), 10 * 10000); // Ожидание загрузки последней кнопки
         await this.driver.findElement(By.id('btnAdd')).click(); // Кнопка Добавить
-        await this.driver.wait(until.elementLocated(By.xpath("//input[@placeholder='Пейджер']")), 10 * 10000); // Загрузка страницы
-        await this.driver.findElement(By.xpath("//input[@placeholder='Имя']")).sendKeys(`${contact.fio} ${contact.company}`); // Поле Имя
-        await this.driver.findElement(By.xpath("//input[@placeholder='Компания']")).sendKeys(contact.company); // Поле Компания
-        await this.driver.findElement(By.xpath("//input[@placeholder='Домашний']")).sendKeys(contact['_id']); // Поле Домашний
+        await this.driver.wait(until.elementLocated(By.xpath("//input[@placeholder='Pager']")), 10 * 10000); // Загрузка страницы
+        await this.driver.findElement(By.xpath("//input[@placeholder='First Name']")).sendKeys(`${contact.fio} ${contact.company}`); // Поле Имя
+        await this.driver.findElement(By.xpath("//input[@placeholder='Company']")).sendKeys(contact.company); // Поле Компания
+        await this.driver.findElement(By.xpath("//input[@placeholder='Home']")).sendKeys(contact['_id']); // Поле Домашний
         await this.driver.findElement(By.id('btnSave')).click(); // Сохранение
         await this.driver.wait(until.elementLocated(By.id('btnImport')), 10 * 10000);
         await this.driver.sleep(2000);
@@ -110,7 +121,7 @@ export class SeleniumService {
     private async getPhonebook(): Promise<PhonebookStruct[]>{
       const params = {
         criteria: {},
-        entity: CollectionType.Phonebook,
+        entity: CollectionType.phonebook,
         requestType: DbRequestType.findAll
       };
       return await this.mongo.mongoRequest(params);
