@@ -9,6 +9,8 @@ import { MongoService } from '@app/mongo/mongo.service';
 import { CollectionType, DbRequestType } from '@app/mongo/types/types';
 import { Phonebook } from '@app/mongo/schemas/Phonebook.schema';
 import { create } from 'domain';
+import { BitrixService } from '@app/bitrix/bitrix.service';
+import { BitirxUserGet } from '@app/bitrix/types/interfaces';
 
 @Injectable()
 export class SyncDataService implements OnApplicationBootstrap  {
@@ -16,12 +18,13 @@ export class SyncDataService implements OnApplicationBootstrap  {
         private readonly configService: ConfigService,
         private readonly log: LoggerService,
         private httpService: HttpService,
-        private readonly mongo: MongoService
+        private readonly mongo: MongoService,
+        private readonly bitrix: BitrixService
       ) {}
 
     onApplicationBootstrap() {}
 
-    @Cron(CronExpression.EVERY_DAY_AT_11PM)
+    @Cron(CronExpression.EVERY_DAY_AT_2AM)
     async syncPhonebookFrom1C(){
         try {
             const header =  {
@@ -35,6 +38,43 @@ export class SyncDataService implements OnApplicationBootstrap  {
         }catch(e){
             this.log.error(`Проблемы с синхронизацией контактной книги 1С ${e}`)
         }
+    }
+
+    @Cron(CronExpression.EVERY_DAY_AT_1AM)
+    async syncBitrixUserID(){
+        try {
+            await this.updateUsersInfo(0);
+
+        }catch(e){
+            this.log.error(`Проблемы обновление данных по пользователям Bitrix ${e}`)
+        }
+    }
+
+    private async updateUsersInfo(startPage: number){
+        try {
+            const response = await this.bitrix.getActiveUsers(startPage);
+            const newUsersArray : BitirxUserGet[] = response.result;
+            const next = response.next;
+            Promise.all(newUsersArray.map(async (user: BitirxUserGet) => {
+
+                const params = {
+                    criteria: {},
+                    entity: CollectionType.bitrixUsers,
+                    requestType: DbRequestType.insertMany,
+                    data: {
+                        extension: user.UF_PHONE_INNER,
+                        bitrixId: user.ID
+                    }
+                }
+                await this.mongo.mongoRequest(params)
+            }));
+        
+            (response.next)? this.updateUsersInfo(startPage + 50) : this.log.info(`Выгрузка пользователей закончилась на странице ${startPage}`)
+
+        }catch(e){
+            this.log.error(`Проблемы с синхронизацией контактной книги 1С ${e}`)
+        }
+
     }
 
     private async dropCollection(){
@@ -51,19 +91,24 @@ export class SyncDataService implements OnApplicationBootstrap  {
     }
 
     private async addNewInfoToPhonebook(contacts: Endpoint1CRequest[]){
-        return await Promise.all( contacts.map( async (contact: Endpoint1CRequest ) => {
-            contact.ClientPhone = contact.ClientPhone.replace(/\)/g, '').replace(/\(/g, '');
-            contact.ClientPhone  = (contact.ClientPhone.length == 10)? `7${contact.ClientPhone}` : `7${contact.ClientPhone.slice(1,11)}`;
-            const info = this.formatContact(contact);
+        try {
+            return await Promise.all( contacts.map( async (contact: Endpoint1CRequest ) => {
+                contact.ClientPhone = contact.ClientPhone.replace(/\)/g, '').replace(/\(/g, '');
+                contact.ClientPhone  = (contact.ClientPhone.length == 10)? `7${contact.ClientPhone}` : `7${contact.ClientPhone.slice(1,11)}`;
+                const info = this.formatContact(contact);
+    
+                const params = {
+                    criteria: {},
+                    entity: CollectionType.phonebook,
+                    requestType: DbRequestType.insertMany,
+                    data: info
+                }
+                await this.mongo.mongoRequest(params);
+            }))
+        }catch(e){
+            throw e;
+        }
 
-            const params = {
-                criteria: {},
-                entity: CollectionType.phonebook,
-                requestType: DbRequestType.insertMany,
-                data: info}
-
-            await this.mongo.mongoRequest(params);
-        }))
     }
 
     private formatContact(contacts: Endpoint1CRequest): Phonebook{
