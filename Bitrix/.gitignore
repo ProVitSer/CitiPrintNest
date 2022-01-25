@@ -399,6 +399,5 @@ dist
 
 
 #Custom
-src/config/*.json
+src/conf/config.json
 api-log
-config.json
