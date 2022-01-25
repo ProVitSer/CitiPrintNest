@@ -23,4 +23,4 @@ export class Phonebook {
 
 export const PhonebookSchema = SchemaFactory.createForClass(Phonebook);
 
-export type CallDocument = Phonebook & Document;
+export type PhonebookDocument = Phonebook & Document;
