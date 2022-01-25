@@ -396,3 +396,9 @@ Temporary Items
 # Local
 .env
 dist
+
+
+#Custom
+src/config/*.json
+api-log
+config.json
