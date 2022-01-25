@@ -1,0 +1,31 @@
+{
+    "appEnv": "development",
+    "appProtocol": "http",
+    "appUrl": "localhost",
+    "appPort": 9090,
+    "mongodbUri": "mongodb://CityPrint:F6YErgxvtRsht4c@mongo.onvoip.ru:27000/CityPrint",
+    "log": {
+        "path": "./api-log/",
+        "formatDate": "YYYY-MM-DD",
+        "maxSize": "20m",
+        "maxFiles": "14d"
+    },
+    "Pbx3CX": {
+        "url": "voipice.3cx.ru:5001",
+        "username": "adminice",
+        "password": "svorp1ofxa7"
+    },
+    "mail": {
+        "host": "smtp.yandex.ru",
+        "port": 465,
+        "secure": true,
+        "auth": {
+            "user": "prokinvs",
+            "pass": "Pr0V!t$er"
+        },
+        "toEmail": "vp@voipnotes.ru",
+        "from": "'Sync 3CX' <prokinvs@yandex.ru>",
+        "subject": "Информация по синхронизации 1С с адресной книгой",
+        "template": "./src/mail/templates/inform"
+    }
+}
