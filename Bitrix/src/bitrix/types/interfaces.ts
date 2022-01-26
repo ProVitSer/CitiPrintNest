@@ -1,5 +1,26 @@
 import { DispositionStatus } from "@app/asterisk/types/interfaces";
 
+export interface CallRegisterData {
+  bitrixId: string, 
+  phoneNumber: string, 
+  type: BitrixCallType, 
+  callTime: string
+}
+
+export interface CallFinishData {
+  bitrixId: string, 
+  userId: number, 
+  bilsec: number, 
+  callStatus: BitrixCallStatusType, 
+  callType: BitrixCallType, 
+  recording: string
+}
+
+export interface CreateTaskData {
+  bitrixId: number, 
+  incomingNumber: string, 
+}
+
 export interface OnExternalCallStart {
   USER_ID: number;
   PHONE_NUMBER: string;
@@ -55,7 +76,7 @@ export interface BitrixRegisterCallRequest {
   USER_ID: number | string;
   PHONE_NUMBER: string;
   CALL_START_DATE?: string;
-  CRM_CREATE?: number;
+  CRM_CREATE?: CreateTaskType;
   CRM_SOURCE?: string;
   CRM_ENTITY_TYPE?: number;
   SHOW?: Show;
@@ -193,6 +214,68 @@ export interface BitrixActivityFields {
   };
 }
 
+
+export interface CreateTaskResponse {
+  result: {
+    task: {
+        id: string,
+        title: string,
+        description: string,
+        descriptionInBbcode: string,
+        declineReason: string,
+        priority: string,
+        status: string,
+        notViewed: string,
+        statusComplete: string,
+        multitask: string,
+        stageId: string,
+        responsibleId: string,
+        responsibleName: string,
+        responsibleLastName: string,
+        responsibleSecondName: string,
+        responsibleLogin: string,
+        responsibleWorkPosition: string,
+        deadline: string,
+        deadlineOrig: string,
+        createdBy: string,
+        createdByName: string,
+        createdByLastName: string,
+        createdByLogin: string,
+        createdDate: string,
+        changedBy: string,
+        changedDate: string,
+        statusChangedBy: string,
+        statusChangedDate: string,
+        closedBy: string,
+        closedDate: string,
+        }
+    }
+}
+
+
+export interface GetTaskResponse {
+  result: {
+    task: {
+        id: string,
+        parentId: string,
+        title: string,
+        description: string,
+        priority: string,
+        status: string,
+        responsibleId: string,
+        deadline: string,        
+        createdBy: string,
+        createdDate: string,
+        changedBy: string,
+        changedDate: string,
+        statusChangedBy: string,
+        statusChangedDate: string,
+        closedBy: string,
+        closedDate: string,
+        }
+    }
+}
+
 export interface GetActivity {
   ID: string;
   fields?: {};
@@ -226,9 +309,14 @@ export const enum BitrixCallType {
   callback = 4,
 }
 
-export const enum CreateTaskType {
-  YES = "true",
+export const enum CrmCreate {
+  YES = "1",
   NO = "false",
+}
+
+export const enum CreateTaskType {
+  YES = 1,
+  NO = 2,
 }
 
 export const enum CreateIncomingLead {
