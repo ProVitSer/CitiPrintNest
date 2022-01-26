@@ -9,10 +9,15 @@ import { AsteriskModule } from './asterisk/asterisk.module';
 import { BitrixModule } from './bitrix/bitrix.module';
 import { PostgresModule } from './postgres/postgres.module';
 import { SyncDataModule } from './sync-data/sync-data.module';
+import { NetServerModule } from './net-server/net-server.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ load: [configuration] }), LoggerModule, MongoModule, AsteriskModule, SyncDataModule, BitrixModule, PostgresModule],
+  imports: [ConfigModule.forRoot({ load: [configuration] }), 
+  LoggerModule, MongoModule,
+  SyncDataModule, BitrixModule, NetServerModule],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+
+//PostgresModule AsteriskModule
