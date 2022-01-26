@@ -236,3 +236,9 @@ export enum Context {
     local = 'RouteToLocalUser',
     default = 'RouteToDefaultIncomingRoute'
 }
+
+export enum DispositionStatus {
+    "NO ANSWER" = "480",
+    "ANSWERED" = "200",
+    "BUSY" = "486",
+  }
