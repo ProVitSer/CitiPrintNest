@@ -9,7 +9,7 @@ import { MongoService } from '@app/mongo/mongo.service';
 import { CollectionType, DbRequestType } from '@app/mongo/types/types';
 import { Phonebook } from '@app/mongo/schemas/Phonebook.schema';
 import { create } from 'domain';
-import { BitrixService } from '@app/bitrix/bitrix.service';
+import { BitrixApiService } from '@app/bitrix/bitrix.api.service';
 import { BitirxUserGet } from '@app/bitrix/types/interfaces';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class SyncDataService implements OnApplicationBootstrap  {
         private readonly log: LoggerService,
         private httpService: HttpService,
         private readonly mongo: MongoService,
-        private readonly bitrix: BitrixService
+        private readonly bitrix: BitrixApiService
       ) {}
 
     onApplicationBootstrap() {}

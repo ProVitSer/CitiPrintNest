@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import * as net from 'net';
-import { OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, 
-    SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayInit, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@app/logger/logger.service';
 import * as moment from 'moment';
 import { PostgresService } from '@app/postgres/postgres.service';
 import { BitrixCallStatusType, CallRegisterData, BitrixCallType, CallFinishData } from '@app/bitrix/types/interfaces';
-import { BitrixService } from '@app/bitrix/bitrix.service';
+import { BitrixApiService } from '@app/bitrix/bitrix.api.service';
 import { CollectionType, DbRequestType } from '@app/mongo/types/types';
 import { MongoService } from '@app/mongo/mongo.service';
 import { BitrixUsers } from '@app/mongo/schemas/BitrixUsers.schema';
+import { UtilsService } from '@app/utils/utils.service'
 
 @WebSocketGateway()
 export class NetServerService implements OnGatewayInit {
@@ -19,7 +19,7 @@ export class NetServerService implements OnGatewayInit {
         private readonly configService: ConfigService,
         private readonly log: LoggerService,
         private readonly pg: PostgresService,
-        private readonly bitrix: BitrixService,
+        private readonly bitrix: BitrixApiService,
         private readonly mongo: MongoService
     ){}
     
@@ -70,7 +70,7 @@ export class NetServerService implements OnGatewayInit {
             const duration = moment.duration(callCDR[2]).asSeconds();
             //52506 2021-02-15 10:27:33 0 565 104
             this.log.info(`${Id3CXcall[1]} ${startCall} ${duration} ${callCDR[3]} ${localExtensionB[1]}`);
-            await this.sleep(20000);
+            await UtilsService.sleep(20000)
             await this.sendInfoByLocalCall(Id3CXcall[1], startCall, duration, callCDR[3], localExtensionB[1])
         }
     }
@@ -117,11 +117,5 @@ export class NetServerService implements OnGatewayInit {
         } catch(e){
             this.log.error(`getBitrixUserID ${e}`)
         }
-    }
-
-    private async sleep(ms: number) {
-        return new Promise(resolve => {
-            setTimeout(resolve, ms);
-        });
     }
 }
