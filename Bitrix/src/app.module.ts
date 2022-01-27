@@ -14,10 +14,9 @@ import { NetServerModule } from './net-server/net-server.module';
 @Module({
   imports: [ConfigModule.forRoot({ load: [configuration] }), 
   LoggerModule, MongoModule,
-  SyncDataModule, BitrixModule, NetServerModule],
+  SyncDataModule, BitrixModule, NetServerModule,
+  PostgresModule, AsteriskModule],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-
-//PostgresModule AsteriskModule

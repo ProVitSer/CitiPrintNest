@@ -8,8 +8,8 @@ export interface CallRegisterData {
 }
 
 export interface CallFinishData {
+  callId: string, 
   bitrixId: string, 
-  userId: number, 
   bilsec: number, 
   callStatus: BitrixCallStatusType, 
   callType: BitrixCallType, 
@@ -106,7 +106,7 @@ export interface ExternalCallHide {
 
 export interface BitrixExternalCallFinishRequest {
   CALL_ID: string;
-  USER_ID: number;
+  USER_ID: string;
   DURATION: number;
   COST_CURRENCY?: string;
   STATUS_CODE?: DispositionStatus | BitrixCallStatusType;
@@ -311,7 +311,7 @@ export const enum BitrixCallType {
 
 export const enum CrmCreate {
   YES = "1",
-  NO = "false",
+  NO = "0",
 }
 
 export const enum CreateTaskType {

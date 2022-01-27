@@ -8,6 +8,7 @@ import { ClPartyInfo } from "./entities/ClPartyInfo";
 import { ClSegments } from "./entities/ClSegments";
 import { CallcentQueuecalls } from "./entities/CallcentQueuecalls";
 import { LoggerModule } from '@app/logger/logger.module';
+import { PostgresService } from './postgres.service';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { LoggerModule } from '@app/logger/logger.module';
     }),
     TypeOrmModule.forFeature([ClParticipants,ClPartyInfo,ClSegments,ClCalls,CallcentQueuecalls]),
   ],
-  providers: [QueryService],
-  exports:[QueryService]
+  providers: [QueryService,PostgresService],
+  exports:[QueryService,PostgresService]
 })
 export class PostgresModule {}

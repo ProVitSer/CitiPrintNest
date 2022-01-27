@@ -57,8 +57,8 @@ export class BitrixService {
     public async externalCallFinish(callData: CallFinishData): Promise<BitrixFinishCallFields>{
         try {
             const data: BitrixExternalCallFinishRequest = {
-                "CALL_ID": callData.bitrixId,
-                "USER_ID": callData.userId,
+                "CALL_ID": callData.callId,
+                "USER_ID": callData.bitrixId,
                 "DURATION": callData.bilsec,
                 "STATUS_CODE": callData.callStatus,
                 "TYPE": callData.callType,
