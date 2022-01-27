@@ -1,9 +1,10 @@
 import { Document, Schema } from 'mongoose';
-import { BitrixUsers, Phonebook } from '../schemas';
+import { BitrixUsers, Phonebook, Tasks } from '../schemas';
 
 export enum CollectionType {
   phonebook = 'phonebook',
   bitrixUsers = 'bitrixUsers',
+  tasks = 'tasks'
 }
 
 export enum DbRequestType {
@@ -24,4 +25,4 @@ export type SchemaType = {
   };
 };
 
-type SchemaClassType = typeof Phonebook | typeof BitrixUsers;
+type SchemaClassType = typeof Phonebook | typeof BitrixUsers | typeof Tasks;
