@@ -9,7 +9,7 @@ import axios, { HttpService } from '@nestjs/axios';
 import * as moment from 'moment';
 
 @Injectable()
-export class BitrixService {
+export class BitrixApiService {
     private baseURL = this.configService.get('bitrix.url');
     private hash = this.configService.get('bitrix.hash');
     private bitrixUrl = `${this.baseURL}${this.hash}`
@@ -94,14 +94,17 @@ export class BitrixService {
         }
     }
 
-    public async getTaskStatus(taskId: string): Promise<GetTaskResponse>{
+    public async getTaskStatus(taskId: string): Promise<GetTaskResponse | false>{
         try {
             const data = {
                 "taskId": taskId
             }
-            const { result } = (await this.httpService.post(`${this.bitrixUrl}${BitrixMetod.TaskGet}`,data).toPromise()).data;
+            const result = await this.httpService.post(`${this.bitrixUrl}${BitrixMetod.TaskGet}`,data).toPromise();
             this.log.info(`Результат getTaskStatus ${result}`)
-            return result;
+            if (result.status == 400) {
+                return false;
+            }
+            return result.data;
         }catch(e){
             this.log.error(`getTaskStatus ${e}`)
         }
