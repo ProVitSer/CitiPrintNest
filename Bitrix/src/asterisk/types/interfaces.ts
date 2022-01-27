@@ -1,6 +1,6 @@
 export const trunkId = '00018';
 
-export interface AsteriskHungupEvent {
+export interface AsteriskHangupEvent {
     lines: [string],
     EOL: string;
     variables: string;
@@ -25,6 +25,28 @@ export interface AsteriskHungupEvent {
     appdata?: string;
     cause?:AsteriskCause;
 }
+
+export interface AsteriskHangupIncomingEventAppData {
+    unicueid: string;
+    incomingNumber: string;
+    billsec: string;
+    disposition: string;
+    recording: string;
+    start: string;
+    end: string; 
+}
+
+export interface AsteriskHangupOutgoingEventAppData {
+    exten: string;
+    unicueid: string;
+    extensionNumber: string;
+    billsec: string;
+    disposition: string;
+    recording: string;
+    start: string;
+    end: string;
+}
+
 
 export interface AsteriskExtensionStatusEvent {
     lines: [string],
@@ -241,4 +263,17 @@ export enum DispositionStatus {
     "NO ANSWER" = "480",
     "ANSWERED" = "200",
     "BUSY" = "486",
-  }
+}
+
+export enum AsteriskCallStatus {
+    NOANSWER = "NO ANSWER",
+    ANSWERED = "ANSWERED",
+    BUSY = "BUSY",
+}
+
+export const getBitrixStatusByAsterisk: { [status in AsteriskCallStatus]: string } = {
+    [AsteriskCallStatus.NOANSWER] : "480",
+    [AsteriskCallStatus.ANSWERED] : "200",
+    [AsteriskCallStatus.BUSY] : "486"
+
+}
