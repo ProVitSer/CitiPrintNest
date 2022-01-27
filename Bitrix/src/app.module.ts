@@ -10,12 +10,13 @@ import { BitrixModule } from './bitrix/bitrix.module';
 import { PostgresModule } from './postgres/postgres.module';
 import { SyncDataModule } from './sync-data/sync-data.module';
 import { NetServerModule } from './net-server/net-server.module';
+import { UtilsModule } from './utils/utils.module';
 
 @Module({
   imports: [ConfigModule.forRoot({ load: [configuration] }), 
   LoggerModule, MongoModule,
   SyncDataModule, BitrixModule, NetServerModule,
-  PostgresModule, AsteriskModule],
+  PostgresModule, AsteriskModule, UtilsModule],
   controllers: [AppController],
   providers: [AppService],
 })
