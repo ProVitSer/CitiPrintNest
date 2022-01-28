@@ -2,7 +2,7 @@ import { LoggerModule } from '@app/logger/logger.module';
 import { MongoModule } from '@app/mongo/mongo.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { BitrixService } from './bitrix.service';
+import { BitrixApiService } from './bitrix.api.service';
 import { HttpModule } from "@nestjs/axios";
 
 @Module({
@@ -18,7 +18,7 @@ import { HttpModule } from "@nestjs/axios";
       inject: [ConfigService],
   })
   ],
-  providers: [BitrixService],
-  exports: [BitrixService],
+  providers: [BitrixApiService],
+  exports: [BitrixApiService],
 })
 export class BitrixModule {}

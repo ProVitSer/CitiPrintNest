@@ -1,5 +1,7 @@
+import { BitrixModule } from '@app/bitrix/bitrix.module';
 import { LoggerModule } from '@app/logger/logger.module';
 import { MongoModule } from '@app/mongo/mongo.module';
+import { PostgresModule } from '@app/postgres/postgres.module';
 import { Module } from '@nestjs/common';
 import { ConfigService, ConfigModule } from '@nestjs/config';
 import * as ARI from 'ari-client';
@@ -12,6 +14,8 @@ import { AriService } from './asterisk-ari.service';
     ConfigModule,
     LoggerModule,
     MongoModule,
+    BitrixModule,
+    PostgresModule
   ],
   providers: [
     {
