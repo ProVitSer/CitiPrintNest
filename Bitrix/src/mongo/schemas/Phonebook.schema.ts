@@ -14,8 +14,8 @@ export class Phonebook {
     @Prop({ type: String, required: true })
     fio: string;
 
-    @Prop({ type: String, required: true })
-    extension: string;
+    @Prop({ type: String })
+    extension: string = "";
 
     @Prop()
     create: Date;

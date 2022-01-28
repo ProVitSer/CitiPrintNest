@@ -216,7 +216,6 @@ export interface BitrixActivityFields {
 
 
 export interface CreateTaskResponse {
-  result: {
     task: {
         id: string,
         title: string,
@@ -249,7 +248,6 @@ export interface CreateTaskResponse {
         closedBy: string,
         closedDate: string,
         }
-    }
 }
 
 

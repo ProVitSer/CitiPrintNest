@@ -44,7 +44,7 @@ export class AriService {
     }
 
     private async continueDialplan(channelId: string, dialplanContext: Context, dialExtension: string){
-        await this.client.channels.continueInDialplan({ channelId: channelId, context: dialplanContext, extension: dialExtension })
+        await this.client.ariClient.channels.continueInDialplan({ channelId: channelId, context: dialplanContext, extension: dialExtension })
     }
 
     private async searchExtByIncomNumber(number: string): Promise<Phonebook | null>{

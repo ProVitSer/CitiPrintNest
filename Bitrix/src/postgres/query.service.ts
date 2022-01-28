@@ -65,7 +65,7 @@ export class QueryService {
           return await this.callParticipants
           .createQueryBuilder("cl_participants")
           .select("cl_participants.infoId")
-          .where("cl_participants.call_id like :callId", {
+          .where("cl_participants.call_id = :callId", {
             callId: callId,
           })
           .orderBy("cl_participants.info_id", "DESC")
@@ -114,7 +114,7 @@ export class QueryService {
           return await this.callParticipants
           .createQueryBuilder("cl_participants")
           .select("cl_participants.recordingUrl")
-          .where("cl_participants.call_id like :callId", {
+          .where("cl_participants.call_id = :callId", {
             callId: callId,
           })
           .andWhere('cl_participants.recording_url is not null')

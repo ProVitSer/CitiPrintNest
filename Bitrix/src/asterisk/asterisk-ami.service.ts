@@ -78,9 +78,12 @@ export class AmiService {
     private async sendInfoByOutgoingCall(appData: AsteriskHangupOutgoingEventAppData): Promise<void>{
         try {
             const { exten /*исходящий номер*/ , unicueid, extensionNumber/*добавочный абонента*/, billsec, disposition, recording, start, end } = appData;
-            const { bitrixId } = await this.getBitrixUserID(extensionNumber);
+            await UtilsService.sleep(20000);
+            const dbResult = await this.getBitrixUserID(extensionNumber);
+            const bitrixUserId = (dbResult.length == 0)? this.configService.get("bitrix.custom.adminId") : dbResult[0].bitrixId;
+
             const callStartData: CallRegisterData = {
-                bitrixId: bitrixId, 
+                bitrixId: bitrixUserId, 
                 phoneNumber: exten,
                 type: BitrixCallType.outgoing, 
                 callTime: start
@@ -89,7 +92,7 @@ export class AmiService {
             
             const callFinishData: CallFinishData = {
                 callId: CALL_ID, 
-                bitrixId: bitrixId, 
+                bitrixId: bitrixUserId, 
                 bilsec: Number(billsec), 
                 callStatus: getBitrixStatusByAsterisk[disposition], 
                 callType: BitrixCallType.outgoing,
@@ -106,8 +109,8 @@ export class AmiService {
     private async checkCompletionTask(incomingNumber: string){
         try {
             const result = await this.checkTaskExist(incomingNumber);
-            if (result != null) {
-                await this.bitrix.closeTask(result._id);
+            if (result.length != 0) {
+                await this.bitrix.closeTask(result[0]._id);
                 const params = {
                     criteria: {
                         _id: incomingNumber
@@ -125,12 +128,13 @@ export class AmiService {
     private async sendInfoByIncomingCall(appData: AsteriskHangupIncomingEventAppData): Promise<void>{
         try {
             const { unicueid, incomingNumber, billsec, disposition, recording, start, end } = appData;
+            await UtilsService.sleep(20000);
             const result = await this.pg.getExternalCallInfo(incomingNumber);
             const bitrixCallStatusType = (result.isAnswered == true) ? BitrixCallStatusType.SuccessfulCall : BitrixCallStatusType.MissedCall;
-            const { bitrixId } = await this.getBitrixUserID(result.lastCallUser);
-            const bitrixUserId = (bitrixId == undefined)? this.configService.get("bitrix.custom.adminId") : bitrixId;
+            const dbResult = await this.getBitrixUserID(result.lastCallUser);
+            const bitrixUserId = (dbResult.length == 0)? this.configService.get("bitrix.custom.adminId") : dbResult[0].bitrixId;
             const callStartData: CallRegisterData = {
-                bitrixId: bitrixId, 
+                bitrixId: bitrixUserId, 
                 phoneNumber: incomingNumber,
                 type: BitrixCallType.incoming, 
                 callTime: start
@@ -139,7 +143,7 @@ export class AmiService {
             
             const callFinishData: CallFinishData = {
                 callId: CALL_ID, 
-                bitrixId: bitrixId, 
+                bitrixId: bitrixUserId, 
                 bilsec: Number(billsec), 
                 callStatus: bitrixCallStatusType, 
                 callType: BitrixCallType.incoming,
@@ -148,7 +152,7 @@ export class AmiService {
 
             await this.bitrix.externalCallFinish(callFinishData);
             if(this.configService.get("bitrix.custom.createTask") == true && bitrixCallStatusType == BitrixCallStatusType.MissedCall){
-                await this.createOrUpdateTask(bitrixId, result.lastCallUser, incomingNumber);
+                await this.createOrUpdateTask(bitrixUserId, result.lastCallUser, incomingNumber);
             }
         }catch(e){
             this.log.error(`sendInfoByIncomingCall ${e}`)
@@ -158,22 +162,22 @@ export class AmiService {
     private async createOrUpdateTask(bitrixId: string, extension: string, incomingNumber: string): Promise<any>{
         try {
             const result = await this.checkTaskExist(incomingNumber);
-            if(result == null){
+            if(result.length == 0){
                 const resultCreateTask = await this.bitrix.createTask({bitrixId: Number(bitrixId), incomingNumber: incomingNumber });
                 const params = {
                     criteria: {},
-                    entity: CollectionType.bitrixUsers,
+                    entity: CollectionType.tasks,
                     requestType: DbRequestType.insertMany,
                     data:  {
                         _id: incomingNumber,
-                        taskId: resultCreateTask.result.task.id,
+                        taskId: resultCreateTask.task.id,
                         bitrixUserId: bitrixId,
                         extension: extension,
                     }
                 }
                 return await this.mongo.mongoRequest(params)
             } else {
-                return await this.updateTask(result._id, bitrixId, incomingNumber, extension);
+                return await this.updateTask(result[0]._id, bitrixId, incomingNumber, extension);
             }
         }catch(e){
             this.log.error(`checkIfTaskExist ${e}`)
@@ -210,7 +214,7 @@ export class AmiService {
         }
     }
 
-    private async checkTaskExist(incomingNumber: string): Promise<Tasks>{
+    private async checkTaskExist(incomingNumber: string): Promise<Tasks[]>{
         try {
             const params = {
                 criteria: {
@@ -225,7 +229,7 @@ export class AmiService {
         }
     }
 
-    private async getBitrixUserID(userExtension: string): Promise<BitrixUsers>{
+    private async getBitrixUserID(userExtension: string): Promise<BitrixUsers[]>{
         try {
             const params = {
                 criteria: {
