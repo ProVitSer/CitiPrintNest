@@ -99,7 +99,7 @@ export class AmiService {
                 recording: recording
             }
     
-            await this.bitrix.externalCallFinish(callFinishData);
+            await this.bitrix.externalCallFinish(callFinishData, this.configService.get('bitrix.custom.asteriskRecordUrl'));
             return await this.checkCompletionTask(exten);
         }catch(e){
             this.log.error(`sendInfoByOutgoingCall ${e}`)
@@ -150,7 +150,7 @@ export class AmiService {
                 recording: recording
             }
 
-            await this.bitrix.externalCallFinish(callFinishData);
+            await this.bitrix.externalCallFinish(callFinishData, this.configService.get('bitrix.custom.asteriskRecordUrl'));
             if(this.configService.get("bitrix.custom.createTask") == true && bitrixCallStatusType == BitrixCallStatusType.MissedCall){
                 await this.createOrUpdateTask(bitrixUserId, result.lastCallUser, incomingNumber);
             }

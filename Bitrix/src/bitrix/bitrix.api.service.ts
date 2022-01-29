@@ -54,7 +54,7 @@ export class BitrixApiService {
         }
     }
 
-    public async externalCallFinish(callData: CallFinishData): Promise<BitrixFinishCallFields>{
+    public async externalCallFinish(callData: CallFinishData, recordingIp: string): Promise<BitrixFinishCallFields>{
         try {
             const data: BitrixExternalCallFinishRequest = {
                 "CALL_ID": callData.callId,
@@ -62,7 +62,7 @@ export class BitrixApiService {
                 "DURATION": callData.bilsec,
                 "STATUS_CODE": callData.callStatus,
                 "TYPE": callData.callType,
-                "RECORD_URL": `http://${this.configService.get('bitrix.custom.recordUrl')}/monitor/${callData.recording}`
+                "RECORD_URL": `http://${recordingIp}/monitor/${callData.recording}`
             };
             const { result } = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.ExternalCallFinish}`,data).toPromise()).data;
             this.log.info(`Результат завершения вызова ${JSON.stringify(result)}`)
