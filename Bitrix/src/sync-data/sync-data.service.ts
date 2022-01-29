@@ -11,6 +11,7 @@ import { Phonebook } from '@app/mongo/schemas/Phonebook.schema';
 import { create } from 'domain';
 import { BitrixApiService } from '@app/bitrix/bitrix.api.service';
 import { BitirxUserGet } from '@app/bitrix/types/interfaces';
+import { Tasks } from '@app/mongo/schemas';
 
 @Injectable()
 export class SyncDataService implements OnApplicationBootstrap  {
@@ -24,6 +25,21 @@ export class SyncDataService implements OnApplicationBootstrap  {
 
     onApplicationBootstrap() {}
 
+
+    @Cron("0 */3 * * * *")
+    async updateTasks(){
+        const tasks = await this.getOpenTasks();
+        await Promise.all(tasks.map( async (task:Tasks ) => {
+            const taskStatus = await this.bitrix.getTaskStatus(task.taskId);
+            if(taskStatus == false){
+                await this.deleteTask(task);
+            } else if (taskStatus.result.task.status == '2'){
+                await this.bitrix.addAuditorsToTask(taskStatus.result.task.id, this.configService.get('bitrix.custom.adminId'));
+                await this.deleteTask(task);
+            }
+        }))
+    }
+
     @Cron(CronExpression.EVERY_DAY_AT_2AM)
     async syncPhonebookFrom1C(){
         try {
@@ -33,7 +49,7 @@ export class SyncDataService implements OnApplicationBootstrap  {
                 }
             }
             const response: Endpoint1CRequest[] = (await this.httpService.get(this.configService.get('endpoint1C'),header).toPromise()).data
-            await this.dropCollection();
+            await this.dropCollection(CollectionType.phonebook);
             await this.addNewInfoToPhonebook(response);
         }catch(e){
             this.log.error(`Проблемы с синхронизацией контактной книги 1С ${e}`)
@@ -53,6 +69,7 @@ export class SyncDataService implements OnApplicationBootstrap  {
     private async updateUsersInfo(startPage: number){
         try {
             const response = await this.bitrix.getActiveUsers(startPage);
+            await this.dropCollection(CollectionType.bitrixUsers);
             const newUsersArray : BitirxUserGet[] = response.result;
             const next = response.next;
             Promise.all(newUsersArray.map(async (user: BitirxUserGet) => {
@@ -72,17 +89,45 @@ export class SyncDataService implements OnApplicationBootstrap  {
             (response.next)? this.updateUsersInfo(startPage + 50) : this.log.info(`Выгрузка пользователей закончилась на странице ${startPage}`)
 
         }catch(e){
-            this.log.error(`Проблемы с синхронизацией контактной книги 1С ${e}`)
+            this.log.error(`Проблемы с выгрузкой пользователей из Битрикс ${e}`)
         }
 
     }
 
-    private async dropCollection(){
+    private async dropCollection(collection: CollectionType){
         try {
             const params = {
                 criteria: {},
-                entity: CollectionType.phonebook,
+                entity: collection,
                 requestType: DbRequestType.deleteMany,
+            }
+            return await this.mongo.mongoRequest(params);
+        }catch(e){
+            throw e;
+        }
+    }
+
+    private async getOpenTasks(): Promise<Tasks[]>{
+        try {
+            const params = {
+                criteria: {},
+                entity: CollectionType.tasks,
+                requestType: DbRequestType.findAll,
+            }
+            return await this.mongo.mongoRequest(params);
+        }catch(e){
+            throw e;
+        }
+    }
+
+    private async deleteTask(task: Tasks): Promise<any>{
+        try {
+            const params = {
+                criteria: {
+                    _id: task._id
+                },
+                entity: CollectionType.tasks,
+                requestType: DbRequestType.delete,
             }
             return await this.mongo.mongoRequest(params);
         }catch(e){

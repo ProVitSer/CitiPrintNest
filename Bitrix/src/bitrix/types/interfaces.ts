@@ -216,7 +216,6 @@ export interface BitrixActivityFields {
 
 
 export interface CreateTaskResponse {
-  result: {
     task: {
         id: string,
         title: string,
@@ -249,7 +248,6 @@ export interface CreateTaskResponse {
         closedBy: string,
         closedDate: string,
         }
-    }
 }
 
 
@@ -366,4 +364,14 @@ export interface ExternalCallRegister {
     callType: BitrixCallType,
     number: string,
     user: string
+}
+
+export interface RegisterCallInfo {
+    extensionNumber: string;
+    phoneNumber: string;
+    calltype: BitrixCallType;
+    startCall: string;
+    billsec: string;
+    bitrixCallStatusType: BitrixCallStatusType;
+    recording: string;
 }

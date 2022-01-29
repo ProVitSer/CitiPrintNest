@@ -5,8 +5,8 @@ import * as mongoose from 'mongoose';
 
 @Schema({ collection: CollectionType.bitrixUsers, versionKey: false })
 export class BitrixUsers {
-    @Prop({ type: String, required: true })
-    extension: string;
+    @Prop({ type: String})
+    extension: string = "";
 
     @Prop({ type: String, required: true })
     bitrixId: string;

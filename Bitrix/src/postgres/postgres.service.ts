@@ -38,7 +38,7 @@ export class PostgresService {
         const callInfo = await this.query.searchCallInfo(id); 
         return {
             isAnswered: callInfo.isAnswered,
-            recording: recording.recordingUrl
+            recording: recording?.recordingUrl
         }
 
     }

@@ -10,7 +10,7 @@ import * as moment from 'moment';
 
 @Injectable()
 export class BitrixApiService {
-    private baseURL = this.configService.get('bitrix.url');
+    private baseURL = this.configService.get('bitrix.domain');
     private hash = this.configService.get('bitrix.hash');
     private bitrixUrl = `${this.baseURL}${this.hash}`
 
@@ -27,8 +27,8 @@ export class BitrixApiService {
                   "ACTIVE": ActiveUser.active,
                 }
               }
-
-            return (await this.httpService.post(`${this.bitrixUrl}${BitrixMetod.UserGet}?start=${startPage}`,data).toPromise()).data 
+              console.log(`${this.bitrixUrl}${BitrixMetod.UserGet}?start=${startPage}`)
+            return (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.UserGet}?start=${startPage}`,data).toPromise()).data 
         }catch(e){
             this.log.error(`getActiveUsers ${e}`)
         }
@@ -46,7 +46,7 @@ export class BitrixApiService {
                 "SHOW": Show.NO
             };    
 
-            const { result }  = (await this.httpService.post(`${this.bitrixUrl}${BitrixMetod.ExternalCallRegister}`,data).toPromise()).data;
+            const { result }  = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.ExternalCallRegister}`,data).toPromise()).data;
             this.log.info(`Результат регистрации вызова ${result}`);
             return result;
         }catch(e){
@@ -54,7 +54,7 @@ export class BitrixApiService {
         }
     }
 
-    public async externalCallFinish(callData: CallFinishData): Promise<BitrixFinishCallFields>{
+    public async externalCallFinish(callData: CallFinishData, recordingIp: string): Promise<BitrixFinishCallFields>{
         try {
             const data: BitrixExternalCallFinishRequest = {
                 "CALL_ID": callData.callId,
@@ -62,10 +62,10 @@ export class BitrixApiService {
                 "DURATION": callData.bilsec,
                 "STATUS_CODE": callData.callStatus,
                 "TYPE": callData.callType,
-                "RECORD_URL": `http://${this.configService.get('bitrix.custom.recordUrl')}/monitor/${callData.recording}`
+                "RECORD_URL": `http://${recordingIp}/monitor/${callData.recording}`
             };
-            const { result } = (await this.httpService.post(`${this.bitrixUrl}${BitrixMetod.ExternalCallFinish}`,data).toPromise()).data;
-            this.log.info(`Результат завершения вызова${result}`)
+            const { result } = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.ExternalCallFinish}`,data).toPromise()).data;
+            this.log.info(`Результат завершения вызова ${JSON.stringify(result)}`)
             return result;
         }catch(e){
             this.log.error(`externalCallFinish ${e}`)
@@ -86,8 +86,8 @@ export class BitrixApiService {
                     "DEADLINE": daedline
                 }
             }
-            const { result } = (await this.httpService.post(`${this.bitrixUrl}${BitrixMetod.TaskAdd}`,data).toPromise()).data;
-            this.log.info(`Результат createTask ${result}`)
+            const { result } = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.TaskAdd}`,data).toPromise()).data;
+            this.log.info(`Результат createTask ${JSON.stringify(result)}`)
             return result;
         }catch(e){
             this.log.error(`createTask ${e}`)
@@ -99,11 +99,11 @@ export class BitrixApiService {
             const data = {
                 "taskId": taskId
             }
-            const result = await this.httpService.post(`${this.bitrixUrl}${BitrixMetod.TaskGet}`,data).toPromise();
-            this.log.info(`Результат getTaskStatus ${result}`)
+            const result = await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.TaskGet}`,data).toPromise();
             if (result.status == 400) {
                 return false;
             }
+            this.log.info(`Результат getTaskStatus ${result.data.result.task.id} ${result.data.result.task.status}`)
             return result.data;
         }catch(e){
             this.log.error(`getTaskStatus ${e}`)
@@ -119,8 +119,8 @@ export class BitrixApiService {
                 }
             }
 
-            const { result } = (await this.httpService.post(`${this.bitrixUrl}${BitrixMetod.TaskUpdate}`,data).toPromise()).data;
-            this.log.info(`Результат addAuditorsToTask ${result}`)
+            const { result } = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.TaskUpdate}`,data).toPromise()).data;
+            this.log.info(`Результат addAuditorsToTask ${JSON.stringify(result)}`)
             return result;
 
         }catch(e){
@@ -137,8 +137,8 @@ export class BitrixApiService {
                 }
             }
 
-            const { result } = (await this.httpService.post(`${this.bitrixUrl}${BitrixMetod.TaskUpdate}`,data).toPromise()).data;
-            this.log.info(`Результат closeTask ${result}`)
+            const { result } = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.TaskUpdate}`,data).toPromise()).data;
+            this.log.info(`Результат closeTask ${JSON.stringify(result)}`)
             return result;
 
         }catch(e){
@@ -155,8 +155,8 @@ export class BitrixApiService {
                 }
             }
 
-            const { result } = (await this.httpService.post(`${this.bitrixUrl}${BitrixMetod.TaskUpdate}`,data).toPromise()).data;
-            this.log.info(`Результат updateResponsibleIdTask ${result}`)
+            const { result } = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.TaskUpdate}`,data).toPromise()).data;
+            this.log.info(`Результат updateResponsibleIdTask ${JSON.stringify(result)}`)
             return result;
         }catch(e){
             this.log.error(`updateResponsibleIdTask ${e}`)

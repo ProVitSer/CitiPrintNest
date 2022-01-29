@@ -4,7 +4,6 @@ import { MongoModule } from '@app/mongo/mongo.module';
 import { PostgresModule } from '@app/postgres/postgres.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { NetServerService } from './net-server.service';
 
 

@@ -79,10 +79,10 @@ export class NetServerService implements OnGatewayInit {
         try {
             const { isAnswered, recording } = await this.pg.getLocalCallInfo(Number(Id3CX));
             const bitrixCallStatusType = (isAnswered == true) ? BitrixCallStatusType.SuccessfulCall : BitrixCallStatusType.MissedCall;
-            const { bitrixId } = await this.getBitrixUserID(localExtensionA);
+            const bitrixUserId = await this.getBitrixUserID(localExtensionA);
 
             const callStartData: CallRegisterData = {
-                bitrixId: bitrixId, 
+                bitrixId: bitrixUserId[0].bitrixId, 
                 phoneNumber: localExtensionB,
                 type: BitrixCallType.outgoing, 
                 callTime: startCall
@@ -91,20 +91,20 @@ export class NetServerService implements OnGatewayInit {
             const { CALL_ID } = await this.bitrix.externalCallRegister(callStartData);
             const callFinishData: CallFinishData = {
                 callId: CALL_ID, 
-                bitrixId: bitrixId, 
+                bitrixId: bitrixUserId[0].bitrixId, 
                 bilsec: duration, 
                 callStatus: bitrixCallStatusType, 
                 callType: BitrixCallType.outgoing,
                 recording: recording
             }
 
-            return await this.bitrix.externalCallFinish(callFinishData);
+            return await this.bitrix.externalCallFinish(callFinishData, this.configService.get('bitrix.custom.pbx3CXRecordUrl'));
         }catch(e){
             this.log.error(`sendInfoByLocalCall ${e}`)
         }
     }
 
-    private async getBitrixUserID(userExtension: string): Promise<BitrixUsers>{
+    private async getBitrixUserID(userExtension: string): Promise<BitrixUsers[]>{
         try {
             const params = {
                 criteria: {
