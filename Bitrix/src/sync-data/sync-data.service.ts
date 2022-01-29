@@ -11,6 +11,7 @@ import { Phonebook } from '@app/mongo/schemas/Phonebook.schema';
 import { create } from 'domain';
 import { BitrixApiService } from '@app/bitrix/bitrix.api.service';
 import { BitirxUserGet } from '@app/bitrix/types/interfaces';
+import { Tasks } from '@app/mongo/schemas';
 
 @Injectable()
 export class SyncDataService implements OnApplicationBootstrap  {
@@ -23,6 +24,21 @@ export class SyncDataService implements OnApplicationBootstrap  {
       ) {}
 
     onApplicationBootstrap() {}
+
+
+    @Cron("0 */3 * * * *")
+    async updateTasks(){
+        const tasks = await this.getOpenTasks();
+        await Promise.all(tasks.map( async (task:Tasks ) => {
+            const taskStatus = await this.bitrix.getTaskStatus(task.taskId);
+            if(taskStatus == false){
+                await this.deleteTask(task);
+            } else if (taskStatus.result.task.status == '2'){
+                await this.bitrix.addAuditorsToTask(taskStatus.result.task.id, this.configService.get('bitrix.custom.adminId'));
+                await this.deleteTask(task);
+            }
+        }))
+    }
 
     @Cron(CronExpression.EVERY_DAY_AT_2AM)
     async syncPhonebookFrom1C(){
@@ -84,6 +100,34 @@ export class SyncDataService implements OnApplicationBootstrap  {
                 criteria: {},
                 entity: collection,
                 requestType: DbRequestType.deleteMany,
+            }
+            return await this.mongo.mongoRequest(params);
+        }catch(e){
+            throw e;
+        }
+    }
+
+    private async getOpenTasks(): Promise<Tasks[]>{
+        try {
+            const params = {
+                criteria: {},
+                entity: CollectionType.tasks,
+                requestType: DbRequestType.findAll,
+            }
+            return await this.mongo.mongoRequest(params);
+        }catch(e){
+            throw e;
+        }
+    }
+
+    private async deleteTask(task: Tasks): Promise<any>{
+        try {
+            const params = {
+                criteria: {
+                    _id: task._id
+                },
+                entity: CollectionType.tasks,
+                requestType: DbRequestType.delete,
             }
             return await this.mongo.mongoRequest(params);
         }catch(e){

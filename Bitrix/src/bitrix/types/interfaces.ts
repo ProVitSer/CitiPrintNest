@@ -365,3 +365,13 @@ export interface ExternalCallRegister {
     number: string,
     user: string
 }
+
+export interface RegisterCallInfo {
+    extensionNumber: string;
+    phoneNumber: string;
+    calltype: BitrixCallType;
+    startCall: string;
+    billsec: string;
+    bitrixCallStatusType: BitrixCallStatusType;
+    recording: string;
+}
