@@ -1,5 +1,5 @@
 import { LoggerService } from '@app/logger/logger.service';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as moment from 'moment';
 import { AsteriskARIStasisStartEvent, Context, trunkId } from './types/interfaces';
@@ -7,9 +7,10 @@ import * as Ari from 'ari-client';
 import { MongoService } from '@app/mongo/mongo.service';
 import { CollectionType, DbRequestType } from '@app/mongo/types/types';
 import { Phonebook } from '@app/mongo/schemas/Phonebook.schema';
+import { resolve } from 'path/posix';
 
 @Injectable()
-export class AriService {
+export class AriService implements OnApplicationBootstrap {
     private client: any;
 
 
@@ -23,28 +24,33 @@ export class AriService {
 
     public async onApplicationBootstrap() {
         this.client = await this.ari;
-        this.client.ariClient.once('StasisStart', async (stasisStartEvent: AsteriskARIStasisStartEvent, dialed: Ari.Channel) => {
-            this.log.info(`Событие входящего вызова ${stasisStartEvent}`);
-            const timestamp = moment().format('YYYY-MM-DDTHH:mm:ss');
-            this.routingCall(stasisStartEvent);
-        });
         this.client.ariClient.start(this.configService.get('asterisk.ari.application') );
+        this.client.ariClient.on('StasisStart', async (stasisStartEvent: AsteriskARIStasisStartEvent, dialed: Ari.Channel) => {
+            try{
+                this.log.info(`Событие входящего вызова ${JSON.stringify(stasisStartEvent)}`);
+                const timestamp = moment().format('YYYY-MM-DDTHH:mm:ss');
+                const result = await this.searchExtByIncomNumber('7' + stasisStartEvent.channel.caller.number);
+                const routingResult = await this.routingCall(stasisStartEvent, result);
+                this.log.info(routingResult)
+            }catch(e){
+                this.log.error(`ariClient ${e}`)
+            }
+        });
     };
 
-    private async routingCall(event: AsteriskARIStasisStartEvent){
-        const result = await this.searchExtByIncomNumber('7' + event.channel.caller.number);
+    private async routingCall(event: AsteriskARIStasisStartEvent, result:Phonebook | null){
         if(result === null || result.extension == ''){
             this.log.info(`Привязка не найдена ${result} вызов пошел по маршруту ${Context.default}`)
-            await this.continueDialplan(event.channel.id, Context.default, trunkId);
+            return await this.continueDialplan(event.channel.id, Context.default, trunkId);
         } else {
             this.log.info(`Была найден привязанный внутренний номер ${result} вызов пошел по маршруту ${Context.local}`)
-            await this.continueDialplan( event.channel.id, Context.local, result.extension);
+            return await this.continueDialplan( event.channel.id, Context.local, result.extension);
         }
 
     }
 
     private async continueDialplan(channelId: string, dialplanContext: Context, dialExtension: string){
-        await this.client.ariClient.channels.continueInDialplan({ channelId: channelId, context: dialplanContext, extension: dialExtension })
+        return await this.client.ariClient.channels.continueInDialplan({ channelId: channelId, context: dialplanContext, extension: dialExtension })
     }
 
     private async searchExtByIncomNumber(number: string): Promise<Phonebook | null>{

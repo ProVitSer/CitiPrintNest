@@ -164,7 +164,7 @@ export class BitrixService {
         try {
             const result = await this.checkTaskExist(incomingNumber);
             if (result.length != 0) {
-                await this.bitrix.closeTask(result[0]._id);
+                await this.bitrix.closeTask(result[0].taskId);
                 const params = {
                     criteria: {
                         _id: incomingNumber
@@ -178,7 +178,7 @@ export class BitrixService {
             this.log.error(`checkCompletionTask ${e}`)
         }
     }
-    
+
     private async checkTaskExist(incomingNumber: string): Promise<Tasks[]>{
         try {
             const params = {

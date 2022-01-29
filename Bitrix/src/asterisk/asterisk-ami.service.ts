@@ -1,6 +1,6 @@
 import { BitrixApiService } from '@app/bitrix/bitrix.api.service';
 import { LoggerService } from '@app/logger/logger.service';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AsteriskHangupIncomingEventAppData, AsteriskHangupOutgoingEventAppData, AsteriskHangupEvent, CallTypeContext, getBitrixStatusByAsterisk } from './types/interfaces';
 import { UtilsService } from '@app/utils/utils.service'
@@ -12,7 +12,7 @@ import { MongoService } from '@app/mongo/mongo.service';
 import { BitrixService } from '@app/bitrix/bitrix.service';
 
 @Injectable()
-export class AmiService {
+export class AmiService implements OnApplicationBootstrap {
     private client: any;
     
 

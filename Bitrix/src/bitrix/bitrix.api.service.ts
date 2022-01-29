@@ -100,10 +100,10 @@ export class BitrixApiService {
                 "taskId": taskId
             }
             const result = await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.TaskGet}`,data).toPromise();
-            this.log.info(`Результат getTaskStatus ${JSON.stringify(result)}`)
             if (result.status == 400) {
                 return false;
             }
+            this.log.info(`Результат getTaskStatus ${result.data.result.task.id} ${result.data.result.task.status}`)
             return result.data;
         }catch(e){
             this.log.error(`getTaskStatus ${e}`)
