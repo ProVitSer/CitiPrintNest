@@ -274,6 +274,27 @@ export interface GetTaskResponse {
     }
 }
 
+export interface GetChildrenPathResponse {
+  result: [{
+        ID: string,
+        NAME: string,
+        CODE: string,
+        STORAGE_ID: string,
+        TYPE: string,
+        REAL_OBJECT_ID: string,
+        PARENT_ID: string,
+        DELETED_TYPE: string,
+        CREATE_TIME: string,
+        UPDATE_TIME: string,
+        DELETE_TIME: string,
+        CREATED_BY: string,
+        UPDATED_BY: string,
+        DELETED_BY: string,
+        DETAIL_URL: string,
+    }]
+}
+
+
 export interface GetActivity {
   ID: string;
   fields?: {};
@@ -293,6 +314,9 @@ export const enum BitrixMetod {
   CrmActivityDelete = "crm.activity.delete",
   CrmActivitUypdate = "crm.activity.update",
   CrmActivityAdd = "crm.activity.add",
+  GetFolderChildrenPath = "disk.folder.getchildren",
+  CreateSubFolder = "disk.folder.addsubfolder",
+  MoveFile = "disk.file.moveto"
 }
 
 export const enum ActiveUser {

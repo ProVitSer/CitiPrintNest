@@ -12,6 +12,7 @@ import { create } from 'domain';
 import { BitrixApiService } from '@app/bitrix/bitrix.api.service';
 import { BitirxUserGet } from '@app/bitrix/types/interfaces';
 import { Tasks } from '@app/mongo/schemas';
+import { BitrixService } from '@app/bitrix/bitrix.service';
 
 @Injectable()
 export class SyncDataService implements OnApplicationBootstrap  {
@@ -20,11 +21,22 @@ export class SyncDataService implements OnApplicationBootstrap  {
         private readonly log: LoggerService,
         private httpService: HttpService,
         private readonly mongo: MongoService,
-        private readonly bitrix: BitrixApiService
+        private readonly bitrix: BitrixApiService,
+        private bitrixSevice: BitrixService
       ) {}
 
     onApplicationBootstrap() {}
 
+
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    async updateRecordFolder(){
+        try{
+            await this.bitrixSevice.updateRecordFolder()
+        }catch(e){
+            this.log.error('updateRecordFolder',e)
+        }
+    }
+    
 
     @Cron("0 */3 * * * *")
     async updateTasks(){

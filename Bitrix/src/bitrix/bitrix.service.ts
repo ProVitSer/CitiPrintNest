@@ -9,7 +9,8 @@ import { UtilsService } from '@app/utils/utils.service';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BitrixApiService } from './bitrix.api.service';
-import { BitrixCallStatusType, BitrixCallType, CallFinishData, CallRegisterData, RegisterCallInfo } from './types/interfaces';
+import { BitrixCallStatusType, BitrixCallType, CallFinishData, CallRegisterData, GetChildrenPathResponse, RegisterCallInfo } from './types/interfaces';
+import * as moment from 'moment';
 
 
 
@@ -24,6 +25,59 @@ export class BitrixService {
         private readonly mongo: MongoService
     )
     {}
+
+    public async updateRecordFolder(): Promise<void>{
+        try{
+            const currentDate = moment().format("YYYY-MM")
+            const folder = await this.getCurrentFolder();
+            const result = await this.checkCurrentFolder(folder.current,folder.move)
+            if (result.length == 0){
+                const currentFolderID = folder.current.result.filter( folder => {
+                    return folder.NAME == currentDate
+                })
+                const moveFolderID = folder.move.result.filter( folder => {
+                    return folder.NAME == currentDate
+                })
+                const recordList = await this.bitrix.getChildrenRecordFolder(Number(currentFolderID[0].ID))
+                await this.moveRecord(recordList,Number(moveFolderID[0].ID))
+            }
+        }catch(e){
+            this.log.info(`moveRecord ${e}`)
+        }
+    }
+
+    private async moveRecord(records: GetChildrenPathResponse, currentFolderID: number){
+        return await Promise.all( records.result.map(async record => {
+            await this.bitrix.moveRecord(currentFolderID, Number(record.ID))
+        }))
+    }
+
+    private async getCurrentFolder(): Promise<{current: GetChildrenPathResponse, move: GetChildrenPathResponse}>{
+        const currentRecordFolder = await this.bitrix.getChildrenRecordFolder(this.configService.get("bitrix.custom.idPathOriginRecord"))
+        const moveRecordFolder = await this.bitrix.getChildrenRecordFolder(this.configService.get("bitrix.custom.idPathMoveRecord"))
+        return {
+            current: currentRecordFolder,
+            move: moveRecordFolder
+        }
+    }
+
+    private async checkCurrentFolder(currentRecordFolder: GetChildrenPathResponse, moveRecordFolder: GetChildrenPathResponse): Promise<GetChildrenPathResponse[] | []>{
+        const newFolder = []
+        const resultCheckFolde =  currentRecordFolder.result.filter(cur => !moveRecordFolder.result.map(move => move.NAME.includes(cur.NAME)))
+        if (resultCheckFolde.length != 0) {
+            Promise.all(resultCheckFolde.map( async folder => {
+                const result = await this.createFolder(folder.NAME)
+                newFolder.push(result)
+            }))
+        }
+        return (newFolder.length == 0)? [] : newFolder
+    }
+
+    private async createFolder(folderName: string): Promise<GetChildrenPathResponse> {
+        return  await this.bitrix.createSubFolder(this.configService.get("bitrix.custom.idPathMoveRecord"),folderName)
+    }
+
+
 
     public async sendInfoByIncomingCall(appData: AsteriskHangupIncomingEventAppData): Promise<void>{
         try{

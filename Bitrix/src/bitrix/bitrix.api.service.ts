@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { BitrixExternalCallFinishRequest, BitrixRegisterCallResponse, 
     Show , ExternalCallRegister, BitirxUserGet, BitrixMetod, ActiveUser, 
     BitrixRegisterCallRequest, CreateTaskType, BitrixCallType, BitrixFinishCallFields, 
-    BitrixCallStatusType, CallRegisterData, CallFinishData, CreateTaskData, BitrixTasksFields, CreateTaskResponse, GetTaskResponse} from './types/interfaces';
+    BitrixCallStatusType, CallRegisterData, CallFinishData, CreateTaskData, BitrixTasksFields, CreateTaskResponse, GetTaskResponse, GetChildrenPathResponse} from './types/interfaces';
 import axios, { HttpService } from '@nestjs/axios';
 import * as moment from 'moment';
 
@@ -160,6 +160,47 @@ export class BitrixApiService {
             return result;
         }catch(e){
             this.log.error(`updateResponsibleIdTask ${e}`)
+        }
+    }
+
+    public async getChildrenRecordFolder(pathID: number): Promise<GetChildrenPathResponse>{
+        try {
+            const { result } = (await this.httpService.get(`${this.bitrixUrl}/${BitrixMetod.GetFolderChildrenPath}?id=${pathID}`).toPromise()).data;
+            this.log.info(`Результат getChildrenRecordPath ${JSON.stringify(result)}`)
+            return result;
+        }catch(e){
+            this.log.error(`getChildrenRecordPath ${e}`)
+        }
+    }
+
+    public async createSubFolder(filderId: string, folderName: string): Promise<GetChildrenPathResponse>{
+        try {
+            const data = {
+                "id": filderId,
+                "data": {
+                    "NAME": folderName
+                }
+            }
+            const { result } = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.CreateSubFolder}`, data).toPromise()).data;
+            this.log.info(`Результат createSubFolder ${JSON.stringify(result)}`)
+            return result;
+        }catch(e){
+            this.log.error(`createSubFolder ${e}`)
+        }
+    }
+
+    public async moveRecord(pathID: number, fileId: number): Promise<any>{
+        try {
+            const data = {
+                "id": fileId,
+                "targetFolderId": pathID
+            }
+
+            const { result } = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.MoveFile}`, data).toPromise()).data;
+            this.log.info(`Результат moveRecord ${JSON.stringify(result)}`)
+            return result;
+        }catch(e){
+            this.log.error(`moveRecord ${e}`)
         }
     }
 }
