@@ -2,7 +2,7 @@ import { AsteriskHangupIncomingEventAppData, AsteriskHangupOutgoingEventAppData,
 import { LoggerService } from '@app/logger/logger.service';
 import { MongoService } from '@app/mongo/mongo.service';
 import { Tasks } from '@app/mongo/schemas';
-import { BitrixUsers } from '@app/mongo/schemas/BitrixUsers.schema';
+import { BitrixUsers } from '@app/mongo/schemas/bitrix-users.schema';
 import { CollectionType, DbRequestType } from '@app/mongo/types/types';
 import { PostgresService } from '@app/postgres/postgres.service';
 import { UtilsService } from '@app/utils/utils.service';

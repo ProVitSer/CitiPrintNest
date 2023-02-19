@@ -10,7 +10,7 @@ import { BitrixCallStatusType, CallRegisterData, BitrixCallType, CallFinishData 
 import { BitrixApiService } from '@app/bitrix/bitrix.api.service';
 import { CollectionType, DbRequestType } from '@app/mongo/types/types';
 import { MongoService } from '@app/mongo/mongo.service';
-import { BitrixUsers } from '@app/mongo/schemas/BitrixUsers.schema';
+import { BitrixUsers } from '@app/mongo/schemas/bitrix-users.schema';
 import { UtilsService } from '@app/utils/utils.service'
 
 @WebSocketGateway()

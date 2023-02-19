@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { Endpoint1CRequest } from './types/interfaces';
 import { MongoService } from '@app/mongo/mongo.service';
 import { CollectionType, DbRequestType } from '@app/mongo/types/types';
-import { Phonebook } from '@app/mongo/schemas/Phonebook.schema';
+import { Phonebook } from '@app/mongo/schemas/phonebook.schema';
 import { create } from 'domain';
 import { BitrixApiService } from '@app/bitrix/bitrix.api.service';
 import { BitirxUserGet } from '@app/bitrix/types/interfaces';

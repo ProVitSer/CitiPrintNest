@@ -6,8 +6,8 @@ import { Phonebook3cxService } from "./phonebook-3cx.service";
 export class Phonebook3cxSchedule {
     constructor(private readonly phonebook3cxService: Phonebook3cxService){}
     
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_DAY_AT_11PM)
     async updatePhonebook() {
-        this.phonebook3cxService.update3cxPhonebook();
+        await this.phonebook3cxService.update3cxPhonebook();
     }
 }

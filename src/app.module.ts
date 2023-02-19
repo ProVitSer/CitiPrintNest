@@ -19,6 +19,11 @@ import { Phonebook3cxModule } from './phonebook-3cx/phonebook-3cx.module';
   LoggerModule, 
   MongoModule,
   UtilsModule,
+  AsteriskModule,
+  BitrixModule,
+  PostgresModule,
+  SyncDataModule,
+  NetServerModule,
   SeleniumModule,
   Phonebook3cxModule
   ],
