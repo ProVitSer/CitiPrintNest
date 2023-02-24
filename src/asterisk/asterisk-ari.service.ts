@@ -6,8 +6,8 @@ import { AsteriskARIStasisStartEvent, Context, trunkId } from './types/interface
 import * as Ari from 'ari-client';
 import { MongoService } from '@app/mongo/mongo.service';
 import { CollectionType, DbRequestType } from '@app/mongo/types/types';
-import { Phonebook } from '@app/mongo/schemas/phonebook.schema';
-import { resolve } from 'path/posix';
+import { Phonebook } from '@app/mongo/schemas';
+
 
 @Injectable()
 export class AriService implements OnApplicationBootstrap {

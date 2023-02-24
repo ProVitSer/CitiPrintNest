@@ -1,7 +1,7 @@
 import { LoggerService } from '@app/logger/logger.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityRepository, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { CallcentQueuecalls } from "./entities/CallcentQueuecalls";
 import { ClCalls } from "./entities/ClCalls";
 import { ClParticipants } from "./entities/ClParticipants";
