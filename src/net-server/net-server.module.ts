@@ -3,7 +3,7 @@ import { LoggerModule } from '@app/logger/logger.module';
 import { MongoModule } from '@app/mongo/mongo.module';
 import { PostgresModule } from '@app/postgres/postgres.module';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { NetServerService } from './net-server.service';
 
 
