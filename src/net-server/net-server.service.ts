@@ -62,7 +62,7 @@ export class NetServerService implements OnGatewayInit {
             '565',
             '101\r\n' ]*/
         const callCDR = data.toString().split(",");
-        const localExtensionB = callCDR[4].match(/(\d*)\n/);
+        const localExtensionB = callCDR[4].match(/(\d*)\r\n/);
         if (callCDR[3].length == 3 && localExtensionB[1].length == 3) {
             const Id3CXcall = callCDR[0].match(/Call (\d*)/);
             const startCall = moment(new Date(callCDR[1])).add(3, 'hour').format('YYYY-MM-DD H:mm:ss');
