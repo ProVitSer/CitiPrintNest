@@ -1,4 +1,3 @@
-export const trunkId = '00018';
 
 export interface AsteriskHangupEvent {
     lines: [string],
@@ -254,10 +253,7 @@ export enum CallTypeContext {
     Outgoing = "outbound-hangup-handler",
 }
 
-export enum Context {
-    local = 'RouteToLocalUser',
-    default = 'RouteToDefaultIncomingRoute'
-}
+
 
 export enum DispositionStatus {
     "NO ANSWER" = "480",
@@ -275,5 +271,39 @@ export const getBitrixStatusByAsterisk: { [status in AsteriskCallStatus]: string
     [AsteriskCallStatus.NOANSWER] : "480",
     [AsteriskCallStatus.ANSWERED] : "200",
     [AsteriskCallStatus.BUSY] : "486"
+
+}
+
+
+export enum Context {
+    localBaza = 'RouteToLocalUserBaza',
+    defaultBaza = 'RouteToDefaultIncomingRouteBaza',
+    localMultifon = 'RouteToLocalUserMultifon',
+    defaultMultifon = 'RouteToDefaultIncomingRouteMultifon'
+}
+
+export enum TrunkId {
+    baza = '00018',
+    miltifon = '79264612222'
+};
+export interface RouteInfo {
+    trunkId:TrunkId;
+    defaultContext: Context,
+    localContext: Context
+
+}
+
+
+export const GET_ROUTE_INFO : { [exten: string]: RouteInfo } = {
+    ['00018'] : {
+        trunkId: TrunkId.baza,
+        defaultContext: Context.defaultBaza,
+        localContext: Context.localBaza
+    },
+    ['79264612222'] : {
+        trunkId: TrunkId.miltifon;
+        defaultContext: Context.defaultMultifon,
+        localContext: Context.localMultifon,
+    }
 
 }

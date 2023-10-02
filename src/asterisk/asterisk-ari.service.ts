@@ -2,11 +2,12 @@ import { LoggerService } from '@app/logger/logger.service';
 import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as moment from 'moment';
-import { AsteriskARIStasisStartEvent, Context, trunkId } from './types/interfaces';
+import { AsteriskARIStasisStartEvent, Context, GET_ROUTE_INFO, trunkId } from './types/interfaces';
 import * as Ari from 'ari-client';
 import { MongoService } from '@app/mongo/mongo.service';
 import { CollectionType, DbRequestType } from '@app/mongo/types/types';
 import { Phonebook } from '@app/mongo/schemas';
+import { UtilsService } from '@app/utils/utils.service';
 
 
 @Injectable()
@@ -28,8 +29,7 @@ export class AriService implements OnApplicationBootstrap {
         this.client.ariClient.on('StasisStart', async (stasisStartEvent: AsteriskARIStasisStartEvent, dialed: Ari.Channel) => {
             try{
                 this.log.info(`Событие входящего вызова ${JSON.stringify(stasisStartEvent)}`);
-                const timestamp = moment().format('YYYY-MM-DDTHH:mm:ss');
-                const result = await this.searchExtByIncomNumber('7' + stasisStartEvent.channel.caller.number);
+                const result = await this.searchExtByIncomNumber(UtilsService.normalizePhoneNumber(stasisStartEvent.channel.caller.number));
                 const routingResult = await this.routingCall(stasisStartEvent, result);
                 this.log.info(routingResult)
             }catch(e){
@@ -38,13 +38,15 @@ export class AriService implements OnApplicationBootstrap {
         });
     };
 
+
     private async routingCall(event: AsteriskARIStasisStartEvent, result:Phonebook | null){
+        const routeInfo = GET_ROUTE_INFO[event.channel.dialplan.exten];
         if(result === null || result.extension == ''){
-            this.log.info(`Привязка не найдена ${result} вызов пошел по маршруту ${Context.default}`)
-            return await this.continueDialplan(event.channel.id, Context.default, trunkId);
+            this.log.info(`Привязка не найдена ${result} вызов пошел по маршруту ${routeInfo.defaultContext}`);
+            return await this.continueDialplan(event.channel.id, routeInfo.defaultContext, routeInfo.trunkId);
         } else {
-            this.log.info(`Была найден привязанный внутренний номер ${result} вызов пошел по маршруту ${Context.local}`)
-            return await this.continueDialplan( event.channel.id, Context.local, result.extension);
+            this.log.info(`Была найден привязанный внутренний номер ${result} вызов пошел по маршруту ${routeInfo.localContext}`);
+            return await this.continueDialplan( event.channel.id, routeInfo.localContext, result.extension);
         }
 
     }
