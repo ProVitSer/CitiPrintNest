@@ -1,7 +1,7 @@
 import { LoggerService } from '@app/logger/logger.service';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
-import { HttpService } from '@nestjs/axios';
+import axios, { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { Endpoint1CRequest } from './types/interfaces';
 import { MongoService } from '@app/mongo/mongo.service';
@@ -25,7 +25,7 @@ export class SyncDataService implements OnApplicationBootstrap  {
 
     @Interval(180000)
     async updateTasks(){
-        try{
+	try{
             const tasks = await this.getOpenTasks();
             await Promise.all(tasks.map( async (task:Tasks ) => {
                 const taskStatus = await this.bitrix.getTaskStatus(task.taskId);
@@ -35,8 +35,8 @@ export class SyncDataService implements OnApplicationBootstrap  {
                     await this.bitrix.addAuditorsToTask(taskStatus.result.task.id, this.configService.get('bitrix.custom.adminId'));
                     await this.deleteTask(task);
                 }
-            }))
-        }catch(e){
+            }))	
+	}catch(e){
             this.log.error('updateTasks error:' + e)
         }
     }
