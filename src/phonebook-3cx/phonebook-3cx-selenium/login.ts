@@ -28,7 +28,12 @@ export class Login {
   private async login(): Promise<WebDriver> {
     try {
       await this.webDriver.get(`https://${this.configService.get('Pbx3CX.url')}/#/login`);
-      await this.checkPrivacy();
+      await this.webDriver.sleep(10000);
+      await this.webDriver.findElement(By.xpath("//h1[contains(text(), 'Your connection is not private')]"));
+      await this.webDriver.findElement(By.xpath("//button[@id='details-button']")).click();
+      await this.webDriver.sleep(5000);
+      await this.webDriver.findElement(By.xpath("//a[@id='proceed-link']")).click();
+      await this.webDriver.sleep(5000);
       await this.webDriver.wait(until.elementLocated(By.className('btn btn-lg btn-primary btn-block ng-scope')), 10 * 10000);
       await this.webDriver
         .findElement(By.xpath("//input[@placeholder='User name or extension number']"))
