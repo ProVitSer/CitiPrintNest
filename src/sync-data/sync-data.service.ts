@@ -1,7 +1,7 @@
 import { LoggerService } from '@app/logger/logger.service';
 import { MongoModule } from '@app/mongo/mongo.module';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import axios, { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { Endpoint1CRequest } from './types/interfaces';
@@ -26,18 +26,22 @@ export class SyncDataService implements OnApplicationBootstrap  {
     onApplicationBootstrap() {}
 
 
-    @Cron("0 */3 * * * *")
+    @Interval(180000)
     async updateTasks(){
-        const tasks = await this.getOpenTasks();
-        await Promise.all(tasks.map( async (task:Tasks ) => {
-            const taskStatus = await this.bitrix.getTaskStatus(task.taskId);
-            if(taskStatus == false){
-                await this.deleteTask(task);
-            } else if (taskStatus.result.task.status == '2'){
-                await this.bitrix.addAuditorsToTask(taskStatus.result.task.id, this.configService.get('bitrix.custom.adminId'));
-                await this.deleteTask(task);
-            }
-        }))
+	try{
+            const tasks = await this.getOpenTasks();
+            await Promise.all(tasks.map( async (task:Tasks ) => {
+                const taskStatus = await this.bitrix.getTaskStatus(task.taskId);
+                if(taskStatus == false){
+                    await this.deleteTask(task);
+                } else if (taskStatus.result.task.status == '2'){
+                    await this.bitrix.addAuditorsToTask(taskStatus.result.task.id, this.configService.get('bitrix.custom.adminId'));
+                    await this.deleteTask(task);
+                }
+            }))	
+	}catch(e){
+            this.log.error('updateTasks error:' + e)
+        }
     }
 
     @Cron(CronExpression.EVERY_DAY_AT_2AM)
