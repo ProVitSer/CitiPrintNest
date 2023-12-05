@@ -1,7 +1,7 @@
 import { Connection, Document, Model, QueryOptions } from "mongoose";
-import { Schemas } from "./config";
-import {PlainObject,MongoRequestParamsInterface} from './types/interfaces';
-import {DbRequestType,CollectionType} from './types/types';
+import { Schemas } from "../config";
+import {PlainObject,MongoRequestParamsInterface} from '../types/interfaces';
+import {DbRequestType,CollectionType} from '../types/types';
 
 export class MongoAdapter{
 

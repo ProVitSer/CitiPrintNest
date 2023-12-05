@@ -8,6 +8,8 @@ import * as ARI from 'ari-client';
 import * as namiLib from 'nami';
 import { AmiService } from './asterisk-ami.service';
 import { AriService } from './asterisk-ari.service';
+import { RegisterAsteriskIncomingCallInfoAdapter } from './adapters/register-asterisk-incoming-call-data.adapter';
+import { RegisterAsteriskOutboundCallInfoAdapter } from './adapters/register-asterisk-outbound-call-data.adapter';
 
 @Module({
   imports: [
@@ -44,7 +46,9 @@ import { AriService } from './asterisk-ari.service';
         inject: [ConfigService]
     },
     AriService,
-    AmiService
+    AmiService,
+    RegisterAsteriskIncomingCallInfoAdapter,
+    RegisterAsteriskOutboundCallInfoAdapter
   ],
   exports: ['ARI', AriService, 'AMI', AmiService]
 })

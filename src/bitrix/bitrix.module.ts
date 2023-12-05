@@ -18,7 +18,7 @@ import { PostgresModule } from '@app/postgres/postgres.module';
           },
       }),
       inject: [ConfigService],
-  })
+    })
   ],
   providers: [BitrixApiService, BitrixService],
   exports: [BitrixApiService, BitrixService],

@@ -3,23 +3,24 @@ import { OnGatewayInit, WebSocketGateway, WebSocketServer } from '@nestjs/websoc
 import { Server } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@app/logger/logger.service';
-import * as moment from 'moment';
 import { PostgresService } from '@app/postgres/postgres.service';
-import { BitrixCallStatusType, CallRegisterData, BitrixCallType, CallFinishData } from '@app/bitrix/types/interfaces';
-import { BitrixApiService } from '@app/bitrix/bitrix.api.service';
 import { CollectionType, DbRequestType } from '@app/mongo/types/types';
-import { MongoService } from '@app/mongo/mongo.service';
+import { MongoService } from '@app/mongo/services/mongo.service';
 import { BitrixUsers } from '@app/mongo/schemas/bitrix-users.schema';
 import { UtilsService } from '@app/utils/utils.service'
+import { RegisterPbxOutboundCallInfoAdapter } from './adapters/register-pbx-outbound-call-data.adapter';
+import { BitrixService } from '@app/bitrix/bitrix.service';
 
 @WebSocketGateway()
 export class NetServerService implements OnGatewayInit {
+    private localExtensionNumberLength: number = 3;
     constructor(
         private readonly configService: ConfigService,
         private readonly log: LoggerService,
         private readonly pg: PostgresService,
-        private readonly bitrix: BitrixApiService,
-        private readonly mongo: MongoService
+        private readonly mongo: MongoService,
+        private readonly registerOutgoing: RegisterPbxOutboundCallInfoAdapter,
+        private readonly bitrix: BitrixService,
     ){}
     
     @WebSocketServer()
@@ -55,7 +56,7 @@ export class NetServerService implements OnGatewayInit {
         });
     }
 
-    private async parseCDR(data: Array<string>){
+    private async parseCDR(data: Array<string>): Promise<void>{
         /* [ 'Call 52501',
             '2021/02/15 07:02:39',
             '00:00:15',
@@ -63,43 +64,27 @@ export class NetServerService implements OnGatewayInit {
             '101\r\n' ]*/
         const callCDR = data.toString().split(",");
 
-        const localExtensionB = callCDR[4].match(/(\d*)\r\n/);    
-    	if (callCDR[3].length == 3 && localExtensionB[1].length == 3) {
-            const Id3CXcall = callCDR[0].match(/Call (\d*)/);
-            const startCall = moment(new Date(callCDR[1])).add(3, 'hour').format('YYYY-MM-DD H:mm:ss');
-            const duration = moment.duration(callCDR[2]).asSeconds();
-            //52506 2021-02-15 10:27:33 0 565 104
-            this.log.info(`${Id3CXcall[1]} ${startCall} ${duration} ${callCDR[3]} ${localExtensionB[1]}`);
-            await UtilsService.sleep(20000)
-            await this.sendInfoByLocalCall(Id3CXcall[1], startCall, duration, callCDR[3], localExtensionB[1])
+        const localExtensionB = callCDR[4].match(/(\d*)\r\n/);   
+
+    	if (callCDR[3].length == this.localExtensionNumberLength && localExtensionB[1].length == this.localExtensionNumberLength) {
+
+            this.log.info(callCDR);
+
+            await UtilsService.sleep(20000);
+
+            await this.sendLocalCallInfo(callCDR);
         }
     }
 
-    private async sendInfoByLocalCall(Id3CX: string, startCall: string, duration: number, localExtensionA: string, localExtensionB: string){
+    private async sendLocalCallInfo(callCDR: string[]): Promise<void>{
         try {
-            const { isAnswered, recording } = await this.pg.getLocalCallInfo(Number(Id3CX));
-            const bitrixCallStatusType = (isAnswered == true) ? BitrixCallStatusType.SuccessfulCall : BitrixCallStatusType.MissedCall;
-            const bitrixUserId = await this.getBitrixUserID(localExtensionA);
 
-            const callStartData: CallRegisterData = {
-                bitrixId: bitrixUserId[0].bitrixId, 
-                phoneNumber: localExtensionB,
-                type: BitrixCallType.outgoing, 
-                callTime: startCall
-            }
+            const Id3CXcall = callCDR[0].match(/Call (\d*)/);
 
-            const { CALL_ID } = await this.bitrix.externalCallRegister(callStartData);
-            const callFinishData: CallFinishData = {
-                callId: CALL_ID, 
-                bitrixId: bitrixUserId[0].bitrixId, 
-                bilsec: duration, 
-                callStatus: bitrixCallStatusType, 
-                callType: BitrixCallType.outgoing,
-                recording: recording
-            }
+            const localCallInfo = await this.pg.getLocalCallInfo(Number(Id3CXcall[1]));
+ 
+            this.bitrix.registerCall(this.registerOutgoing.getRegisterCallInfo(callCDR, localCallInfo, this.configService.get('bitrix.custom.pbx3CXRecordUrl')));
 
-            await this.bitrix.externalCallFinish(callFinishData, this.configService.get('bitrix.custom.pbx3CXRecordUrl'));
-            return await this.bitrix.attachRecord(callFinishData, this.configService.get('bitrix.custom.pbx3CXRecordUrl'));
         }catch(e){
             this.log.error(`sendInfoByLocalCall ${e}`)
         }

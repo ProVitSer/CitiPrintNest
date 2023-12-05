@@ -6,7 +6,6 @@ import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import 'winston-daily-rotate-file';
 const { combine, timestamp, label, printf, splat } = winston.format;
-import * as moment from 'moment';
 
 @Module({
     imports: [

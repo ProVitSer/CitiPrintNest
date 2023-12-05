@@ -62,7 +62,6 @@ export class Phonebook {
             await this.webDriver.wait(until.elementLocated(By.id('btnImport')), 10 * 10000);
         }
       }catch(e){
-        console.log(e)
         throw new Error(`${ADD_PHONEBOOK_ERROR}: ${e}`)
       }
   }
