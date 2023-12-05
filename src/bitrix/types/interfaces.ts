@@ -111,7 +111,7 @@ export interface BitrixExternalCallFinishRequest {
   COST_CURRENCY?: string;
   STATUS_CODE?: DispositionStatus | BitrixCallStatusType;
   FAILED_REASON?: string;
-  RECORD_URL?: string;
+  RECORD_URL?: string; // Старый метод передачи разговора, пока выпиливаем, переходим на attachRecord
   VOTE?: number;
   TYPE?: BitrixCallType;
   ADD_TO_CHAT?: number;
@@ -162,6 +162,13 @@ export interface BitrixFinishCallFields {
   TRANSCRIPT_ID: number;
   TRANSCRIPT_PENDING: string;
   RECORD_FILE_ID: number;
+}
+
+export interface BitrixAttachRecord {
+  CALL_ID: string;
+  FILENAME: string;
+  FILE_CONTENT?: string;
+  RECORD_URL: string;
 }
 
 export interface BitrixActivityFields {
@@ -293,6 +300,7 @@ export const enum BitrixMetod {
   CrmActivityDelete = "crm.activity.delete",
   CrmActivitUypdate = "crm.activity.update",
   CrmActivityAdd = "crm.activity.add",
+  ExternalCallAttachRecord = "telephony.externalCall.attachRecord",
 }
 
 export const enum ActiveUser {

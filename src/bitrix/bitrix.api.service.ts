@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { BitrixExternalCallFinishRequest, BitrixRegisterCallResponse, 
     Show , ExternalCallRegister, BitirxUserGet, BitrixMetod, ActiveUser, 
     BitrixRegisterCallRequest, CreateTaskType, BitrixCallType, BitrixFinishCallFields, 
-    BitrixCallStatusType, CallRegisterData, CallFinishData, CreateTaskData, BitrixTasksFields, CreateTaskResponse, GetTaskResponse} from './types/interfaces';
+    BitrixCallStatusType, CallRegisterData, CallFinishData, CreateTaskData, BitrixTasksFields, CreateTaskResponse, GetTaskResponse, BitrixAttachRecord} from './types/interfaces';
 import axios, { HttpService } from '@nestjs/axios';
 import * as moment from 'moment';
 
@@ -27,7 +27,6 @@ export class BitrixApiService {
                   "ACTIVE": ActiveUser.active,
                 }
               }
-              console.log(`${this.bitrixUrl}${BitrixMetod.UserGet}?start=${startPage}`)
             return (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.UserGet}?start=${startPage}`,data).toPromise()).data 
         }catch(e){
             this.log.error(`getActiveUsers ${e}`)
@@ -47,7 +46,7 @@ export class BitrixApiService {
             };    
 
             const { result }  = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.ExternalCallRegister}`,data).toPromise()).data;
-            this.log.info(`Результат регистрации вызова ${result}`);
+            this.log.info(`Результат регистрации вызова ${JSON.stringify(result)}`);
             return result;
         }catch(e){
             this.log.error(`externalCallRegister ${e}`)
@@ -62,13 +61,31 @@ export class BitrixApiService {
                 "DURATION": callData.bilsec,
                 "STATUS_CODE": callData.callStatus,
                 "TYPE": callData.callType,
-                "RECORD_URL": `http://${recordingIp}/monitor/${callData.recording}`
             };
+
+            this.log.info(`Информация о вызове ${JSON.stringify(data)}`)
             const { result } = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.ExternalCallFinish}`,data).toPromise()).data;
             this.log.info(`Результат завершения вызова ${JSON.stringify(result)}`)
             return result;
         }catch(e){
             this.log.error(`externalCallFinish ${e}`)
+        }
+    }
+
+    public async attachRecord(callData: CallFinishData, recordingIp: string): Promise<BitrixFinishCallFields>{
+        try {
+            const data: BitrixAttachRecord = {
+                "CALL_ID": callData.callId,
+                "FILENAME": callData.recording,
+                "RECORD_URL": `http://${recordingIp}/monitor/${callData.recording}`
+            };
+
+            this.log.info(`Добавление записи разговора к звонку ${JSON.stringify(data)}`)
+            const { result } = (await this.httpService.post(`${this.bitrixUrl}/${BitrixMetod.ExternalCallAttachRecord}`,data).toPromise()).data;
+            this.log.info(`Результат загрузки записи ${JSON.stringify(result)}`)
+            return result;
+        }catch(e){
+            this.log.error(`attachRecord ${e}`)
         }
     }
 

@@ -1,7 +1,7 @@
 import { LoggerService } from '@app/logger/logger.service';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
-import axios, { HttpService } from '@nestjs/axios';
+import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { Endpoint1CRequest } from './types/interfaces';
 import { MongoService } from '@app/mongo/mongo.service';

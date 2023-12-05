@@ -98,7 +98,8 @@ export class NetServerService implements OnGatewayInit {
                 recording: recording
             }
 
-            return await this.bitrix.externalCallFinish(callFinishData, this.configService.get('bitrix.custom.pbx3CXRecordUrl'));
+            await this.bitrix.externalCallFinish(callFinishData, this.configService.get('bitrix.custom.pbx3CXRecordUrl'));
+            return await this.bitrix.attachRecord(callFinishData, this.configService.get('bitrix.custom.pbx3CXRecordUrl'));
         }catch(e){
             this.log.error(`sendInfoByLocalCall ${e}`)
         }

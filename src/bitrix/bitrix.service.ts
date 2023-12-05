@@ -97,11 +97,12 @@ export class BitrixService {
             }
     
             await this.bitrix.externalCallFinish(callFinishData, this.configService.get('bitrix.custom.asteriskRecordUrl'));
+            await this.bitrix.attachRecord(callFinishData, this.configService.get('bitrix.custom.asteriskRecordUrl'));
+
             return dbResult;
         }catch(e){
             this.log.info(`registerCall ${e}`)
         }
-
     }
 
     private async createOrUpdateTask(bitrixId: string, extension: string, incomingNumber: string): Promise<any>{

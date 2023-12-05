@@ -287,7 +287,7 @@ export enum TrunkId {
     miltifon = '79264612222'
 };
 export interface RouteInfo {
-    trunkId:TrunkId;
+    trunkId: TrunkId;
     defaultContext: Context,
     localContext: Context
 
@@ -301,9 +301,8 @@ export const GET_ROUTE_INFO : { [exten: string]: RouteInfo } = {
         localContext: Context.localBaza
     },
     ['79264612222'] : {
-        trunkId: TrunkId.miltifon;
+        trunkId: TrunkId.miltifon,
         defaultContext: Context.defaultMultifon,
         localContext: Context.localMultifon,
     }
-
 }
