@@ -1,4 +1,4 @@
-import { Schemas } from './config';
+import { Schemas } from '../config';
 import { Schema } from 'mongoose';
 
 export default (): { name: string; schema: Schema }[] => {

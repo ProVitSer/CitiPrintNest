@@ -1,7 +1,7 @@
 import { LoggerService } from '@app/logger/logger.service';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { By, until, WebDriver } from 'selenium-webdriver';
+import { By, WebDriver } from 'selenium-webdriver';
 import { LOGOUT_ERROR } from '../phonebook-3cx.consts';
 
 @Injectable()

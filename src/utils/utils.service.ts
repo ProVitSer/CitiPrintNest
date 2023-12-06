@@ -1,13 +1,10 @@
-import { Injectable } from '@nestjs/common';
-
-@Injectable()
 export class UtilsService {
 
-    static replaceChannel(channel: string){
+    static replaceChannel(channel: string): string{
         return channel.replace(/(SIP\/)(\d{3})-(.*)/, `$2`);
     };
 
-    static async sleep(ms: number) {
+    static async sleep(ms: number): Promise<unknown> {
         return new Promise(resolve => {
             setTimeout(resolve, ms);
         });
@@ -30,4 +27,8 @@ export class UtilsService {
         return digits;
     }
 
+    static frmat1CPhone(clientPhone: string): string {
+        const phoneNum = clientPhone.replace(/\)/g, '').replace(/\(/g, '');
+        return (phoneNum.length == 10)? `7${phoneNum}` : `7${phoneNum.slice(1,11)}`;
+    }
 }

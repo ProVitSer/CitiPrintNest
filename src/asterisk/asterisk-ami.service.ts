@@ -1,31 +1,25 @@
-import { BitrixApiService } from '@app/bitrix/bitrix.api.service';
 import { LoggerService } from '@app/logger/logger.service';
 import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AsteriskHangupIncomingEventAppData, AsteriskHangupOutgoingEventAppData, AsteriskHangupEvent, CallTypeContext, getBitrixStatusByAsterisk } from './types/interfaces';
-import { UtilsService } from '@app/utils/utils.service'
-import { PostgresService } from '@app/postgres/postgres.service';
-import { BitrixCallStatusType, BitrixCallType, CallFinishData, CallRegisterData, GetTaskResponse } from '@app/bitrix/types/interfaces';
-import { CollectionType, DbRequestType } from '@app/mongo/types/types';
-import { BitrixUsers, Tasks } from '@app/mongo/schemas';
-import { MongoService } from '@app/mongo/mongo.service';
+import { AsteriskHangupIncomingEventAppData, AsteriskHangupOutgoingEventAppData, AsteriskHangupEvent } from './types/interfaces';
 import { BitrixService } from '@app/bitrix/bitrix.service';
+import { ApplicationTypes, CallTypeContext } from './types/enum';
+import { RegisterAsteriskIncomingCallInfoAdapter } from './adapters/register-asterisk-incoming-call-data.adapter';
+import { RegisterAsteriskOutboundCallInfoAdapter } from './adapters/register-asterisk-outbound-call-data.adapter';
 
 @Injectable()
 export class AmiService implements OnApplicationBootstrap {
     private client: any;
-    
 
     constructor(
         @Inject('AMI') private readonly ami: any,
         private readonly configService: ConfigService,
         private readonly log: LoggerService,
         private readonly bitrix: BitrixService,
-        private readonly pg: PostgresService,
-        private readonly mongo: MongoService
-        
-    ) {
-    }
+        private readonly registerIncoming: RegisterAsteriskIncomingCallInfoAdapter,
+        private readonly registerOutgoing: RegisterAsteriskOutboundCallInfoAdapter
+
+    ) {}
 
     public async onApplicationBootstrap() {
         try {
@@ -44,15 +38,21 @@ export class AmiService implements OnApplicationBootstrap {
     };
 
     private async parseAmiEvent(event: AsteriskHangupEvent): Promise<void> {
-        if(event.context == CallTypeContext.Incoming && event.application == 'NoOp'){
+        if(event.context == CallTypeContext.Incoming && event.application == ApplicationTypes.noOp){
+
             this.log.info(`Завершился входящий вызов на Asterisk ${event.appdata}`);
+
             const phoneEvent: AsteriskHangupIncomingEventAppData = JSON.parse(event.appdata);
-            this.bitrix.sendInfoByIncomingCall(phoneEvent)
+
+            this.bitrix.sendInfoByIncomingCall(await this.registerIncoming.getRegisterCallInfo(phoneEvent, this.configService.get('bitrix.custom.asteriskRecordUrl')));
         }
-        else if(event.context == CallTypeContext.Outgoing && event.application == 'NoOp'){
+        else if(event.context == CallTypeContext.Outgoing && event.application == ApplicationTypes.noOp){
+
             this.log.info(`Завершился исходящие вызов на Asterisk ${event.appdata}`);
+
             const phoneEvent: AsteriskHangupOutgoingEventAppData = JSON.parse(event.appdata);
-            this.bitrix.sendInfoByOutgoingCall(phoneEvent)
+
+            this.bitrix.sendInfoByOutgoingCall(this.registerOutgoing.getRegisterCallInfo(phoneEvent, this.configService.get('bitrix.custom.asteriskRecordUrl')))
         }
     }
 

@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
-import { MongoAdapter } from './mongo.adapter';
-import { MongoRequestParamsInterface, MongoApiResultInterface } from './types/interfaces';
-import { DbRequestType } from './types/types';
+import { MongoAdapter } from '../adapter/mongo.adapter';
+import { MongoRequestParamsInterface } from '../types/interfaces';
+import { DbRequestType } from '../types/types';
 
 @Injectable()
 export class MongoService {
 
     constructor(@InjectConnection() private readonly connection: Connection) { }
 
-    public async mongoRequest(params: MongoRequestParamsInterface): Promise<any> {
+    public async mongoRequest<T>(params: MongoRequestParamsInterface): Promise<T> {
         try {
             const { model, criteria, requestType, options, data } = new MongoAdapter(params, this.connection);
             return await this[this.getMethodByActionType(requestType)]({ model, criteria, options, data });
@@ -38,7 +38,7 @@ export class MongoService {
         }
     }
 
-    private async getList({ model, criteria, projection }): Promise<any | undefined> {
+    private async getList({ model, criteria, projection }): Promise<unknown> {
         try{
             return await model.find(criteria, projection);
         }catch(e){
@@ -46,7 +46,7 @@ export class MongoService {
         }
     }
 
-    private async getDocumentById({ model, criteria }): Promise<any | undefined> {
+    private async getDocumentById({ model, criteria }): Promise<unknown> {
         try{
             return await model.findById(criteria.id);
         }catch(e){
@@ -54,7 +54,7 @@ export class MongoService {
         }
     }
 
-    private async updateDocumentById({ model, criteria }): Promise<any | undefined> {
+    private async updateDocumentById({ model, criteria }): Promise<unknown> {
         try{
             return await model.updateOne(criteria.id);
         }catch(e){
@@ -62,7 +62,7 @@ export class MongoService {
         }
     }
 
-    private async insert({ model, criteria }): Promise<any | undefined> {
+    private async insert({ model, criteria }): Promise<unknown> {
         try{
             return await new model().save();
         }catch(e){
@@ -70,7 +70,7 @@ export class MongoService {
         }
     }
     
-    private async insertMany({ model, data }): Promise<any | undefined> {
+    private async insertMany({ model, data }): Promise<unknown> {
         try{
             return await model.insertMany(data);
         }catch(e){
@@ -78,7 +78,7 @@ export class MongoService {
         }
     }
 
-    private async deleteDocumentById({ model, criteria }): Promise<any | undefined> {
+    private async deleteDocumentById({ model, criteria }): Promise<unknown> {
         try{
             return await model.deleteOne(criteria.id);
         }catch(e){
@@ -86,7 +86,7 @@ export class MongoService {
         }
     }
 
-    private async deleteCollection({ model }): Promise<any | undefined> {
+    private async deleteCollection({ model }): Promise<unknown> {
         try{
             return await model.deleteMany({});
         }catch(e){

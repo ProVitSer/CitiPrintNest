@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongoService } from './mongo.service';
-import schemas from './mongo.provider';
+import { MongoService } from './services/mongo.service';
+import schemas from './provider/mongo.provider';
 
 @Module({
     imports: [

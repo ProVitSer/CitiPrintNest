@@ -10,7 +10,6 @@ import { BitrixModule } from './bitrix/bitrix.module';
 import { PostgresModule } from './postgres/postgres.module';
 import { SyncDataModule } from './sync-data/sync-data.module';
 import { NetServerModule } from './net-server/net-server.module';
-import { UtilsModule } from './utils/utils.module';
 import { SeleniumModule } from './selenium/selenium.module';
 import { Phonebook3cxModule } from './phonebook-3cx/phonebook-3cx.module';
 
@@ -18,7 +17,6 @@ import { Phonebook3cxModule } from './phonebook-3cx/phonebook-3cx.module';
   imports: [ConfigModule.forRoot({ load: [configuration] }), 
   LoggerModule, 
   MongoModule,
-  UtilsModule,
   AsteriskModule,
   BitrixModule,
   PostgresModule,
